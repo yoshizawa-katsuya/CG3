@@ -4,6 +4,17 @@
 
 void PrimitiveDrawer::Initialize(ID3D12Device* device) {
 
+	pipelineSets_.at(static_cast<uint16_t>(BlendMode::kBlendModeNone)) = CreateGraphicsPipeline(BlendMode::kBlendModeNone, device);
+
+	pipelineSets_.at(static_cast<uint16_t>(BlendMode::kBlendModeNormal)) = CreateGraphicsPipeline(BlendMode::kBlendModeNormal, device);
+
+
+}
+
+std::unique_ptr<PrimitiveDrawer::PipelineSet> PrimitiveDrawer::CreateGraphicsPipeline(BlendMode blendMode, ID3D12Device* device) {
+
+	std::unique_ptr<PipelineSet> pipelineSet = std::make_unique<PipelineSet>();
+
 	//dxcCompilerを初期化
 	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils = nullptr;
 	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler = nullptr;
@@ -75,7 +86,7 @@ void PrimitiveDrawer::Initialize(ID3D12Device* device) {
 	}
 	//バイナリを元に生成
 	hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(),
-		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
+		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&pipelineSet->rootSignature));
 	assert(SUCCEEDED(hr));
 
 	//InputLayout
@@ -101,6 +112,21 @@ void PrimitiveDrawer::Initialize(ID3D12Device* device) {
 	//すべての色要素を書き込む
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
+
+	switch (blendMode) {
+	case BlendMode::kBlendModeNone:
+	default:
+		break;
+	case BlendMode::kBlendModeNormal:
+		blendDesc.RenderTarget[0].BlendEnable = TRUE;
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+		blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	}
+	
 	//ResiterizerStateの設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 	//裏面（時計回り）を表示しない
@@ -128,7 +154,7 @@ void PrimitiveDrawer::Initialize(ID3D12Device* device) {
 
 	//PSOを作成
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
-	graphicsPipelineStateDesc.pRootSignature = rootSignature_.Get();	//RootSignature
+	graphicsPipelineStateDesc.pRootSignature = pipelineSet->rootSignature.Get();	//RootSignature
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;	//InputLayout
 	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),
 	vertexShaderBlob->GetBufferSize() };	//VertexShader
@@ -152,8 +178,16 @@ void PrimitiveDrawer::Initialize(ID3D12Device* device) {
 	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
 	//実際に生成
 	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-		IID_PPV_ARGS(&graphicsPipelineState_));
+		IID_PPV_ARGS(&pipelineSet->graphicsPipelineState));
 	assert(SUCCEEDED(hr));
+
+	return pipelineSet;
+}
+
+void PrimitiveDrawer::SetPipelineSet(ID3D12GraphicsCommandList* commandList, BlendMode blendMode) {
+
+	commandList->SetGraphicsRootSignature(pipelineSets_.at(static_cast<uint16_t>(blendMode))->rootSignature.Get());
+	commandList->SetPipelineState(pipelineSets_.at(static_cast<uint16_t>(blendMode))->graphicsPipelineState.Get());	//PSOを設定
 
 
 }

@@ -5,12 +5,34 @@
 #include <dxcapi.h>
 #include <wrl.h>
 #include <string>
+#include <cstdlib>
+#include <array>
+#include <memory>
+
+//ブレンドモード
+enum class BlendMode {
+	kBlendModeNone, //ブレンドなし
+	kBlendModeNormal, //NormalBlend
+
+};
 
 class PrimitiveDrawer
 {
 public:
 
+	
+
+	//パイプラインセット
+	struct PipelineSet
+	{
+		Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
+		Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState;
+	};
+
 	void Initialize(ID3D12Device* device);
+
+	//パイプライン生成
+	std::unique_ptr<PipelineSet> CreateGraphicsPipeline(BlendMode blendMode, ID3D12Device* device);
 
 	Microsoft::WRL::ComPtr<IDxcBlob> CompilerShader(
 		//CompilerするShaderファイルへのパス
@@ -28,15 +50,20 @@ public:
 
 	std::string ConvertString(const std::wstring& str);
 
-	ID3D12RootSignature* GetRootSignature() { return rootSignature_.Get(); }
+	void SetPipelineSet(ID3D12GraphicsCommandList* commandList, BlendMode blendMode);
 
-	ID3D12PipelineState* GetGrahicsPipelineState() { return graphicsPipelineState_.Get(); }
+	//ID3D12RootSignature* GetRootSignature() { return rootSignature_.Get(); }
+
+	//ID3D12PipelineState* GetGrahicsPipelineState() { return graphicsPipelineState_.Get(); }
 
 private:
 
 	
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_;
+	//Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
+
+	//パイプライン。ブレンドモードの数だけ用意する
+	std::array<std::unique_ptr<PipelineSet>, 2> pipelineSets_;
+	//Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_;
 
 };
 

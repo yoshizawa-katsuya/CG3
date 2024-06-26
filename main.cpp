@@ -270,15 +270,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
 		
 		//RootSignatureを設定。PSOに設定しているけど別途設定が必要
+		primitiveDrawer->SetPipelineSet(dxCommon->GetCommandList(), BlendMode::kBlendModeNone);
+		/*
 		dxCommon->GetCommandList()->SetGraphicsRootSignature(primitiveDrawer->GetRootSignature());
 		dxCommon->GetCommandList()->SetPipelineState(primitiveDrawer->GetGrahicsPipelineState());	//PSOを設定
-		
+		*/
 		//commandList_->IASetIndexBuffer(&indexBufferView);	//IBVを設定
 		//形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
 		dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 
-		gameScene->Draw(dxCommon->GetCommandList());
+		gameScene->Draw(dxCommon->GetCommandList(), primitiveDrawer);
 
 		
 		

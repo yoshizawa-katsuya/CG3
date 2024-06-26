@@ -4,6 +4,7 @@
 #include "Struct.h"
 #include "DirectXCommon.h"
 #include "TextureManager.h"
+#include "PrimitiveDrawer.h"
 #include "Model.h"
 #include "Sprite.h"
 #include "Player.h"
@@ -18,7 +19,7 @@ public:
 
 	void Update();
 
-	void Draw(ID3D12GraphicsCommandList* commandList);
+	void Draw(ID3D12GraphicsCommandList* commandList, PrimitiveDrawer* primitiveDrawer);
 
 private:
 
