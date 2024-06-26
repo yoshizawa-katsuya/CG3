@@ -125,6 +125,7 @@ std::unique_ptr<PrimitiveDrawer::PipelineSet> PrimitiveDrawer::CreateGraphicsPip
 		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
 		blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 		blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+		break;
 	}
 	
 	//ResiterizerStateの設定

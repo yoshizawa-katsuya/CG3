@@ -49,7 +49,6 @@ void GameScene::Update() {
 	player_->Update();
 
 	ImGui::Begin("Window");
-	ImGui::ColorEdit4("color", &model_->GetMaterialDataAddress().color.x);
 	ImGui::DragFloat3("tranlateSprite", &sprite_->GetTransformAddress().translate.x, 0.01f);
 	if (ImGui::TreeNode("camera")) {
 		ImGui::DragFloat3("translate", &cameratransform.translate.x, 0.01f);

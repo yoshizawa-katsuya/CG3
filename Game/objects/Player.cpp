@@ -11,6 +11,7 @@ void Player::Update() {
 
 	ImGui::Begin("Player");
 	if (ImGui::TreeNode("obj")) {
+		ImGui::ColorEdit4("color", &model_->GetMaterialDataAddress().color.x);
 		ImGui::DragFloat3("translate", &model_->GetTransformAddress().translate.x, 0.01f);
 		ImGui::DragFloat3("rotate", &model_->GetTransformAddress().rotate.x, 0.01f);
 		ImGui::DragFloat3("scale", &model_->GetTransformAddress().scale.x, 0.01f);
