@@ -13,7 +13,12 @@
 enum class BlendMode {
 	kBlendModeNone, //ブレンドなし
 	kBlendModeNormal, //NormalBlend
+	kBlendModeAdd,	//加算
+	kBlendModeSubtract,	//減算
+	kBlendModeMultiply,	//乗算
+	kBlendModeScreen,	//スクリーン
 
+	kCountOfBlendMode,	//利用してはいけない
 };
 
 class PrimitiveDrawer
@@ -62,7 +67,7 @@ private:
 	//Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
 
 	//パイプライン。ブレンドモードの数だけ用意する
-	std::array<std::unique_ptr<PipelineSet>, 2> pipelineSets_;
+	std::array<std::unique_ptr<PipelineSet>, (uint16_t)BlendMode::kCountOfBlendMode> pipelineSets_;
 	//Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_;
 
 };

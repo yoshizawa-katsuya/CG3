@@ -5,6 +5,8 @@ void Player::Initialize(Model* model) {
 
 	model_ = model;
 
+	model->SetRotate({ 0.0f, 3.15f, 0.0f });
+
 }
 
 void Player::Update() {

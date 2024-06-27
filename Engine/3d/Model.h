@@ -28,6 +28,8 @@ public:
 
 	Transforms& GetTransformAddress() { return transform_; }
 
+	void SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
+
 private:
 
 	int32_t kClientWidth_;

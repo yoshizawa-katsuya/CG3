@@ -24,7 +24,7 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 	directionalLightResource_->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData_));
 	//デフォルト値
 	directionalLightData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	directionalLightData_->direction = { 0.0f, -1.0f, 0.0f };
+	directionalLightData_->direction = { 0.0f, 0.0f, 1.0f };
 	directionalLightData_->intensity = 1.0f;
 
 
@@ -33,7 +33,7 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 	textureHandle1 = textureManager_->Load("Game/resources/uvChecker.png");
 
 	model_ = std::make_unique<Model>(device_.Get(), &cameratransform, textureManager_, kClientWidth_, kClientHeight_);
-	model_->CreateFromOBJ("./Game/resources", "axis.obj");
+	model_->CreateFromOBJ("./Game/resources", "plane.obj");
 
 	sprite_ = std::make_unique<Sprite>(device_.Get(), textureHandle1, Vector2{320.0f, 180.0f}, Vector2{640.0f, 360.0f}, Vector4{1.0f, 1.0f, 1.0f, 1.0f}, kClientWidth_, kClientHeight_);
 
@@ -74,6 +74,15 @@ void GameScene::Update() {
 
 		ImGui::TreePop();
 	}
+
+	ImGui::RadioButton("BlendModeNone", &blendMode, static_cast<int>(BlendMode::kBlendModeNone));
+	ImGui::RadioButton("BlendModeNormal", &blendMode, static_cast<int>(BlendMode::kBlendModeNormal));
+	ImGui::RadioButton("BlendModeAdd", &blendMode, static_cast<int>(BlendMode::kBlendModeAdd));
+	ImGui::RadioButton("BlendModeSubtract", &blendMode, static_cast<int>(BlendMode::kBlendModeSubtract));
+	ImGui::RadioButton("BlendModeMultiply", &blendMode, static_cast<int>(BlendMode::kBlendModeMultiply));
+	ImGui::RadioButton("BlendModeScreen", &blendMode, static_cast<int>(BlendMode::kBlendModeScreen));
+
+	
 	//ImGui::Checkbox("useMonsterBall", &useMonaterBall);
 	ImGui::End();
 
@@ -81,7 +90,7 @@ void GameScene::Update() {
 
 void GameScene::Draw(ID3D12GraphicsCommandList* commandList, PrimitiveDrawer* primitiveDrawer) {
 
-	primitiveDrawer->SetPipelineSet(commandList, BlendMode::kBlendModeNormal);
+	primitiveDrawer->SetPipelineSet(commandList, static_cast<BlendMode>(blendMode));
 
 
 	//dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonaterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);

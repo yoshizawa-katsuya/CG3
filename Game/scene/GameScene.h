@@ -31,6 +31,8 @@ private:
 
 	TextureManager* textureManager_;
 
+	int blendMode = static_cast<int>(BlendMode::kBlendModeNone);
+
 	//カメラの変数
 	Transforms cameratransform;
 
