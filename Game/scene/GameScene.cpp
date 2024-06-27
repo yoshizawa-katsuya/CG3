@@ -33,7 +33,7 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 	textureHandle1 = textureManager_->Load("Game/resources/uvChecker.png");
 
 	model_ = std::make_unique<Model>(device_.Get(), &cameratransform, textureManager_, kClientWidth_, kClientHeight_);
-	model_->CreateFromOBJ("./Game/resources", "plane.obj");
+	model_->CreateFromOBJ("./Game/resources", "fence.obj");
 
 	sprite_ = std::make_unique<Sprite>(device_.Get(), textureHandle1, Vector2{320.0f, 180.0f}, Vector2{640.0f, 360.0f}, Vector4{1.0f, 1.0f, 1.0f, 1.0f}, kClientWidth_, kClientHeight_);
 
