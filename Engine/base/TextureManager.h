@@ -49,6 +49,8 @@ public:
 
 	ID3D12DescriptorHeap* GetSrvDescriptorHeap() const { return srvDescriptorHeap_.Get(); }
 
+	uint32_t GetDescriptorSizeSRV() const { return descriptorSizeSRV_; }
+
 	/// <summary>
 	/// テクスチャ
 	/// </summary>

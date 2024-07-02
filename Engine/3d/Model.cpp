@@ -1,5 +1,6 @@
 #include "Model.h"
 #include "Matrix.h"
+#include "dx12.h"
 #include <fstream>
 #include <sstream>
 #include <cassert>
@@ -19,9 +20,71 @@ void Model::CreateFromOBJ(const std::string& directoryPath, const std::string& f
 	//モデル読み込み
 	modelData_ = LoadObjFile(directoryPath, filename);
 
+	Create();
+
+	textureHandle_ = textureManager_->Load(modelData_.material.textureFilePath);
+
+}
+
+void Model::CreatePlane() {
+
+	modelData_.vertices.push_back({ .position = {1.0f, 1.0f, 0.0f, 1.0f}, .texcoord = {0.0f, 0.0f}, .normal = {0.0f, 0.0f, 1.0f} });	//左上
+	modelData_.vertices.push_back({ .position = {-1.0f, 1.0f, 0.0f, 1.0f}, .texcoord = {1.0f, 0.0f}, .normal = {0.0f, 0.0f, 1.0f} });	//右上
+	modelData_.vertices.push_back({ .position = {1.0f, -1.0f, 0.0f, 1.0f}, .texcoord = {0.0f, 1.0f}, .normal = {0.0f, 0.0f, 1.0f} });	//左下
+	modelData_.vertices.push_back({ .position = {1.0f, -1.0f, 0.0f, 1.0f}, .texcoord = {0.0f, 1.0f}, .normal = {0.0f, 0.0f, 1.0f} });	//左下
+	modelData_.vertices.push_back({ .position = {-1.0f, 1.0f, 0.0f, 1.0f}, .texcoord = {1.0f, 0.0f}, .normal = {0.0f, 0.0f, 1.0f} });	//右上
+	modelData_.vertices.push_back({ .position = {-1.0f, -1.0f, 0.0f, 1.0f}, .texcoord = {1.0f, 1.0f}, .normal = {0.0f, 0.0f, 1.0f} });	//右下
+
+	Create();
+
+	modelData_.material.textureFilePath = "Game/resources/uvChecker.png";
+	textureHandle_ = textureManager_->Load(modelData_.material.textureFilePath);
+
+}
+
+void Model::CreateParticle() {
+
+	CreatePlane();
+
+	
+	//Inatance用のTransformationMatrixリソースを作る
+	instancingResouce_ = CreateBufferResource(device_, sizeof(TransformationMatrix) * kNumInstance_);
+	//書き込むためのアドレスを取得
+	instancingResouce_->Map(0, nullptr, reinterpret_cast<void**>(&instancingData_));
+
+	//単位行列を書き込んでおく
+	for (uint32_t index = 0; index < kNumInstance_; ++index) {
+		instancingData_[index].WVP = MakeIdentity4x4();
+		instancingData_[index].World = MakeIdentity4x4();
+	}
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC instancingSrvDesc{};
+	instancingSrvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	instancingSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	instancingSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+	instancingSrvDesc.Buffer.FirstElement = 0;
+	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+	instancingSrvDesc.Buffer.NumElements = kNumInstance_;
+	instancingSrvDesc.Buffer.StructureByteStride = sizeof(TransformationMatrix);
+	instancingSrvHandleCPU_ = GetCPUDescriptorHandle(textureManager_->GetSrvDescriptorHeap(), textureManager_->GetDescriptorSizeSRV(), 3);
+	instancingSrvHandleGPU_ = GetGPUDescriptorHandle(textureManager_->GetSrvDescriptorHeap(), textureManager_->GetDescriptorSizeSRV(), 3);
+	device_->CreateShaderResourceView(instancingResouce_.Get(), &instancingSrvDesc, instancingSrvHandleCPU_);
+
+	for (uint32_t index = 0; index < kNumInstance_; ++index) {
+
+		transforms_[index].scale = { 1.0f, 1.0f, 1.0f };
+		transforms_[index].rotate = { 0.0f, 3.15f, 0.0f };
+		transforms_[index].translate = { index * 0.1f, index * 0.1f, index * 0.1f };
+
+	}
+
+}
+
+void Model::Create() {
+
 	//VertexResourceを生成
 	vertexResource_ = CreateBufferResource(device_, sizeof(VertexData) * modelData_.vertices.size());
-	
+
 	//リソースの先頭のアドレスから使う
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	//使用するリソースのサイズは頂点3つ分のサイズ
@@ -54,8 +117,6 @@ void Model::CreateFromOBJ(const std::string& directoryPath, const std::string& f
 	//単位行列を書き込んでおく
 	transformationMatrixData_->WVP = MakeIdentity4x4();
 
-	textureHandle_ = textureManager_->Load(modelData_.material.textureFilePath);
-
 }
 
 void Model::Draw(ID3D12GraphicsCommandList* commandList) {
@@ -80,6 +141,44 @@ void Model::Draw(ID3D12GraphicsCommandList* commandList) {
 	//描画1(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
 		//commandList_->DrawIndexedInstanced((kSubdivision * kSubdivision * 6), 1, 0, 0, 0);
 	commandList->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
+
+
+}
+
+void Model::DrawParticle(ID3D12GraphicsCommandList* commandList) {
+
+
+	Matrix4x4 cameraMatrix = MakeAffineMatrix(cameratransform_->scale, cameratransform_->rotate, cameratransform_->translate);
+	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth_) / float(kClientHeight_), 0.1f, 100.0f);
+
+	for (uint32_t index = 0; index < kNumInstance_; ++index) {
+
+		Matrix4x4 worldMatrix = MakeAffineMatrix(transforms_[index].scale, transforms_[index].rotate, transforms_[index].translate);
+		Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+		instancingData_[index].WVP = worldViewProjectionMatrix;
+		instancingData_[index].World = worldMatrix;
+
+	}
+
+
+
+	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);	//VBVを設定
+	//マテリアルのCBufferの場所を設定
+	commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
+	//wvp用のCBufferの場所を設定
+
+	
+
+	//SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
+	textureManager_->SetGraphicsRootDescriptorTable(commandList, 2, textureHandle_);
+
+	//instancing用のDataを読むためにStructBufferのSRVを設定する
+	commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU_);
+
+
+	//描画!6頂点のポリゴンを、kNumInstance(今回は10)だけInstance描画を行う
+	commandList->DrawInstanced(UINT(modelData_.vertices.size()), kNumInstance_, 0, 0);
 
 
 }

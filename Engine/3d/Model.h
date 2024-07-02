@@ -13,7 +13,13 @@ public:
 
 	void CreateFromOBJ(const std::string& directoryPath, const std::string& filename);
 
+	void CreatePlane();
+
+	void CreateParticle();
+
 	void Draw(ID3D12GraphicsCommandList* commandList);
+
+	void DrawParticle(ID3D12GraphicsCommandList* commandList);
 
 	//objファイルの読み込み
 	ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename);
@@ -31,6 +37,8 @@ public:
 	void SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
 
 private:
+
+	void Create();
 
 	int32_t kClientWidth_;
 	int32_t kClientHeight_;
@@ -54,6 +62,17 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource_;
 	//データを書き込む
 	TransformationMatrix* transformationMatrixData_ = nullptr;
+
+	//Inatance用のTransformationMatrixリソースを作る
+	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResouce_;
+	TransformationMatrix* instancingData_ = nullptr;
+
+	const uint32_t kNumInstance_ = 10;
+
+	Transforms transforms_[10];
+
+	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU_;
+	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU_;
 
 	//Transform変数を作る
 	Transforms transform_{ {1.0f, 1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f } };
