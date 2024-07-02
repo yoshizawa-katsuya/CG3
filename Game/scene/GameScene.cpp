@@ -12,6 +12,9 @@ GameScene::~GameScene() {
 
 void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager, const int32_t kClientWidth, const int32_t kClientHeight) {
 
+	std::mt19937 randomEngine(seedGenerator_());
+	randomEngine_ = randomEngine;
+
 	device_ = device;
 	textureManager_ = textureManager;
 	kClientWidth_ = kClientWidth;
@@ -34,7 +37,7 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 
 	model_ = std::make_unique<Model>(device_.Get(), &cameratransform, textureManager_, kClientWidth_, kClientHeight_);
 	//model_->CreateFromOBJ("./Game/resources", "fence.obj");
-	model_->CreateParticle();
+	model_->CreateParticle(randomEngine_);
 
 	sprite_ = std::make_unique<Sprite>(device_.Get(), textureHandle1, Vector2{320.0f, 180.0f}, Vector2{640.0f, 360.0f}, Vector4{1.0f, 1.0f, 1.0f, 1.0f}, kClientWidth_, kClientHeight_);
 

@@ -1,5 +1,6 @@
 #include "Model.h"
 #include "Matrix.h"
+#include "Vector.h"
 #include "dx12.h"
 #include <fstream>
 #include <sstream>
@@ -26,7 +27,7 @@ void Model::CreateFromOBJ(const std::string& directoryPath, const std::string& f
 
 }
 
-void Model::CreatePlane() {
+void Model::CreateCircle() {
 
 	modelData_.vertices.push_back({ .position = {1.0f, 1.0f, 0.0f, 1.0f}, .texcoord = {0.0f, 0.0f}, .normal = {0.0f, 0.0f, 1.0f} });	//左上
 	modelData_.vertices.push_back({ .position = {-1.0f, 1.0f, 0.0f, 1.0f}, .texcoord = {1.0f, 0.0f}, .normal = {0.0f, 0.0f, 1.0f} });	//右上
@@ -37,25 +38,26 @@ void Model::CreatePlane() {
 
 	Create();
 
-	modelData_.material.textureFilePath = "Game/resources/uvChecker.png";
+	modelData_.material.textureFilePath = "Game/resources/circle.png";
 	textureHandle_ = textureManager_->Load(modelData_.material.textureFilePath);
 
 }
 
-void Model::CreateParticle() {
+void Model::CreateParticle(std::mt19937& randomEngine) {
 
-	CreatePlane();
+	CreateCircle();
 
 	
 	//Inatance用のTransformationMatrixリソースを作る
-	instancingResouce_ = CreateBufferResource(device_, sizeof(TransformationMatrix) * kNumInstance_);
+	instancingResouce_ = CreateBufferResource(device_, sizeof(ParticleForGPU) * kNumMaxInstance_);
 	//書き込むためのアドレスを取得
 	instancingResouce_->Map(0, nullptr, reinterpret_cast<void**>(&instancingData_));
 
 	//単位行列を書き込んでおく
-	for (uint32_t index = 0; index < kNumInstance_; ++index) {
+	for (uint32_t index = 0; index < kNumMaxInstance_; ++index) {
 		instancingData_[index].WVP = MakeIdentity4x4();
 		instancingData_[index].World = MakeIdentity4x4();
+		instancingData_[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC instancingSrvDesc{};
@@ -64,19 +66,41 @@ void Model::CreateParticle() {
 	instancingSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	instancingSrvDesc.Buffer.FirstElement = 0;
 	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	instancingSrvDesc.Buffer.NumElements = kNumInstance_;
-	instancingSrvDesc.Buffer.StructureByteStride = sizeof(TransformationMatrix);
+	instancingSrvDesc.Buffer.NumElements = kNumMaxInstance_;
+	instancingSrvDesc.Buffer.StructureByteStride = sizeof(ParticleForGPU);
 	instancingSrvHandleCPU_ = GetCPUDescriptorHandle(textureManager_->GetSrvDescriptorHeap(), textureManager_->GetDescriptorSizeSRV(), 3);
 	instancingSrvHandleGPU_ = GetGPUDescriptorHandle(textureManager_->GetSrvDescriptorHeap(), textureManager_->GetDescriptorSizeSRV(), 3);
 	device_->CreateShaderResourceView(instancingResouce_.Get(), &instancingSrvDesc, instancingSrvHandleCPU_);
 
-	for (uint32_t index = 0; index < kNumInstance_; ++index) {
+	for (uint32_t index = 0; index < kNumMaxInstance_; ++index) {
 
-		transforms_[index].scale = { 1.0f, 1.0f, 1.0f };
-		transforms_[index].rotate = { 0.0f, 3.15f, 0.0f };
-		transforms_[index].translate = { index * 0.1f, index * 0.1f, index * 0.1f };
+		particles_[index] = MakeNewParticle(randomEngine);
 
 	}
+
+}
+
+Particle Model::MakeNewParticle(std::mt19937& randomEngine) {
+
+	std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+
+	Particle particle;
+
+	particle.transform.scale = { 1.0f, 1.0f, 1.0f };
+	particle.transform.rotate = { 0.0f, 3.15f, 0.0f };
+	//particle.transform.translate = { index * 0.1f, index * 0.1f, index * 0.1f };
+	particle.transform.translate = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
+	//particle.velocity = { 0.0f, 1.0f, 0.0f };
+	particle.velocity = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
+
+	std::uniform_real_distribution<float> distcolor(0.0f, 1.0f);
+	particle.color = { distcolor(randomEngine), distcolor(randomEngine), distcolor(randomEngine), 1.0f };
+
+	std::uniform_real_distribution<float> distTime(1.0f, 3.0f);
+	particle.lifeTime = distTime(randomEngine);
+	particle.currentTime = 0;
+
+	return particle;
 
 }
 
@@ -152,12 +176,26 @@ void Model::DrawParticle(ID3D12GraphicsCommandList* commandList) {
 	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth_) / float(kClientHeight_), 0.1f, 100.0f);
 
-	for (uint32_t index = 0; index < kNumInstance_; ++index) {
+	const float kDeltaTime = 1.0f / 60.0f;
+	uint32_t numInstance = 0;
 
-		Matrix4x4 worldMatrix = MakeAffineMatrix(transforms_[index].scale, transforms_[index].rotate, transforms_[index].translate);
+	for (uint32_t index = 0; index < kNumMaxInstance_; ++index) {
+		if (particles_[index].lifeTime <= particles_[index].currentTime) {
+			continue;
+		}
+
+		particles_[index].transform.translate += particles_[index].velocity * kDeltaTime;
+		particles_[index].currentTime += kDeltaTime;	//経過時間を足す
+		Matrix4x4 worldMatrix = MakeAffineMatrix(particles_[index].transform.scale, particles_[index].transform.rotate, particles_[index].transform.translate);
 		Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
-		instancingData_[index].WVP = worldViewProjectionMatrix;
-		instancingData_[index].World = worldMatrix;
+		instancingData_[numInstance].WVP = worldViewProjectionMatrix;
+		instancingData_[numInstance].World = worldMatrix;
+		instancingData_[numInstance].color = particles_[index].color;
+
+		float alpha = 1.0f - (particles_[index].currentTime / particles_[index].lifeTime);
+		instancingData_[numInstance].color.w = alpha;
+
+		++numInstance;
 
 	}
 
@@ -178,7 +216,7 @@ void Model::DrawParticle(ID3D12GraphicsCommandList* commandList) {
 
 
 	//描画!6頂点のポリゴンを、kNumInstance(今回は10)だけInstance描画を行う
-	commandList->DrawInstanced(UINT(modelData_.vertices.size()), kNumInstance_, 0, 0);
+	commandList->DrawInstanced(UINT(modelData_.vertices.size()), numInstance, 0, 0);
 
 
 }

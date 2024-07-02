@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <d3d12.h>
 #include <wrl.h>
+#include <random>
 
 class Model
 {
@@ -13,9 +14,11 @@ public:
 
 	void CreateFromOBJ(const std::string& directoryPath, const std::string& filename);
 
-	void CreatePlane();
+	void CreateCircle();
 
-	void CreateParticle();
+	void CreateParticle(std::mt19937& randomEngine);
+
+	Particle MakeNewParticle(std::mt19937& randomEngine);
 
 	void Draw(ID3D12GraphicsCommandList* commandList);
 
@@ -65,11 +68,11 @@ private:
 
 	//Inatance用のTransformationMatrixリソースを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResouce_;
-	TransformationMatrix* instancingData_ = nullptr;
+	ParticleForGPU* instancingData_ = nullptr;
 
-	const uint32_t kNumInstance_ = 10;
+	const uint32_t kNumMaxInstance_ = 10;
 
-	Transforms transforms_[10];
+	Particle particles_[10];
 
 	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU_;
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU_;

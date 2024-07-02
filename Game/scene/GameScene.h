@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdlib>
 #include <memory>
+#include <random>
 #include "Struct.h"
 #include "DirectXCommon.h"
 #include "TextureManager.h"
@@ -23,6 +24,9 @@ public:
 
 private:
 
+	std::random_device seedGenerator_;
+	std::mt19937 randomEngine_;
+
 	int32_t kClientWidth_;
 	int32_t kClientHeight_;
 
@@ -31,7 +35,7 @@ private:
 
 	TextureManager* textureManager_;
 
-	int blendMode = static_cast<int>(BlendMode::kBlendModeNone);
+	int blendMode = static_cast<int>(BlendMode::kBlendModeAdd);
 
 	//カメラの変数
 	Transforms cameratransform;
