@@ -53,6 +53,11 @@ typedef struct Matrix4x4
 	float m[4][4];
 } Matrix4x4;
 
+struct AABB {
+	Vector3 min;
+	Vector3 max;
+};
+
 typedef struct Material {
 	Vector4 color;
 	int32_t enableLighting;
@@ -129,4 +134,9 @@ struct ParticleForGPU {
 	Matrix4x4 WVP;
 	Matrix4x4 World;
 	Vector4 color;
+};
+
+struct AccelerationField {
+	Vector3 accerelation;	//加速度
+	AABB area;	//範囲
 };

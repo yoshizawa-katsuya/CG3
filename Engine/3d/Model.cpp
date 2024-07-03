@@ -19,6 +19,9 @@ Model::Model(ID3D12Device* device, Transforms* camera, TextureManager* textureMa
 	emitter_.transform.translate = { 0.0f, 0.0f, 0.0f };
 	emitter_.transform.rotate = { 0.0f, 0.0f, 0.0f };
 	emitter_.transform.scale = { 1.0f, 1.0f, 1.0f };
+	accelerationField_.accerelation = { 15.0f, 0.0f, 0.0f };
+	accelerationField_.area.min = { -1.0f, -1.0f, -1.0f };
+	accelerationField_.area.max = { 1.0f, 1.0f, 1.0f };
 
 }
 
@@ -222,6 +225,12 @@ void Model::DrawParticle(ID3D12GraphicsCommandList* commandList) {
 			continue;
 		}
 
+		//Fieldの範囲内のParticleには加速度を適用する
+		if (useAccelerationField_) {
+			if (IsCollision(accelerationField_.area, particleIterator->transform.translate)) {
+				particleIterator->velocity += accelerationField_.accerelation * kDeltaTime_;
+			}
+		}
 		particleIterator->transform.translate += particleIterator->velocity * kDeltaTime_;
 		particleIterator->currentTime += kDeltaTime_;	//経過時間を足す
 

@@ -74,3 +74,5 @@ Matrix4x4 operator+(const Matrix4x4& m1, const Matrix4x4& m2);
 Matrix4x4 operator-(const Matrix4x4& m1, const Matrix4x4& m2);
 
 Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2);
+
+bool IsCollision(const AABB& aabb, const Vector3& point);

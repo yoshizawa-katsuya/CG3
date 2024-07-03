@@ -20,7 +20,7 @@ float Length(const Vector3& v);
 //正規化
 Vector3 Normalize(const Vector3& v);
 
-void VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label);
+//void VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label);
 
 //クロス積
 Vector3 Cross(const Vector3& v1, const Vector3& v2);

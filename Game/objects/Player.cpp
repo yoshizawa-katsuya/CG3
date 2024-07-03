@@ -29,6 +29,7 @@ void Player::Update(std::mt19937& randomEngine) {
 
 	ImGui::Begin("Player");
 	ImGui::Checkbox("useBillboard", &model_->GetUseBillboardAddress());
+	ImGui::Checkbox("useAccelerationField", &model_->GetUseAccelerationField());
 	ImGui::DragFloat3("EmitterTranslate", &model_->GetEmitter().transform.translate.x, 0.01f, -100.0f, 100.0f);
 	if (ImGui::Button("Add Particle")) {
 		model_->GetParticles().splice(model_->GetParticles().end(), model_->Emit(model_->GetEmitter(), randomEngine));

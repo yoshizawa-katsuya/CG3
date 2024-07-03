@@ -1,4 +1,6 @@
+#include <algorithm>
 #include "Matrix.h"
+#include "Vector.h"
 
 Matrix3x3 MakeTranslateMatrix(Vector2 translate) {
 	Matrix3x3 matrix;
@@ -463,3 +465,19 @@ Matrix4x4 operator+(const Matrix4x4& m1, const Matrix4x4& m2) { return Add(m1, m
 Matrix4x4 operator-(const Matrix4x4& m1, const Matrix4x4& m2) { return Subtract(m1, m2); }
 
 Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2) { return Multiply(m1, m2); }
+
+bool IsCollision(const AABB& aabb, const Vector3& point) {
+
+	Vector3 closestPoint{ std::clamp(point.x, aabb.min.x, aabb.max.x),
+						  std::clamp(point.y, aabb.min.y, aabb.max.y),
+						  std::clamp(point.z, aabb.min.z, aabb.max.z) };
+
+	float distance = Length(Subtract(point, closestPoint));
+
+	if (distance <= 0.0f) {
+		return true;
+	}
+
+	return false;
+
+}

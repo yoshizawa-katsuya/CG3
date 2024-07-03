@@ -44,6 +44,8 @@ public:
 
 	bool& GetUseBillboardAddress() { return useBillboard_; }
 
+	bool& GetUseAccelerationField() { return useAccelerationField_; }
+
 	std::list<Particle>& GetParticles() { return particles_; }
 
 	Emitter& GetEmitter() { return emitter_; }
@@ -87,6 +89,9 @@ private:
 
 	std::list<Particle> particles_;
 	Emitter emitter_{};
+
+	AccelerationField accelerationField_;
+	bool useAccelerationField_ = false;
 
 	bool useBillboard_ = true;
 
