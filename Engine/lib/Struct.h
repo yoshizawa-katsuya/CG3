@@ -118,6 +118,13 @@ struct Particle {
 	float currentTime;
 };
 
+struct Emitter {
+	Transforms transform; //!< エミッタのTransform
+	uint32_t count;	//!< 発生数
+	float frequency; //!<　発生頻度
+	float frequencyTime; //!<頻度用時刻
+};
+
 struct ParticleForGPU {
 	Matrix4x4 WVP;
 	Matrix4x4 World;

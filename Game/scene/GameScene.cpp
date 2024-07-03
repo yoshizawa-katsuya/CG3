@@ -50,7 +50,7 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 void GameScene::Update() {
 
 	//プレイヤーの更新
-	player_->Update();
+	player_->Update(randomEngine_);
 
 	ImGui::Begin("Window");
 	ImGui::DragFloat3("tranlateSprite", &sprite_->GetTransformAddress().translate.x, 0.01f);

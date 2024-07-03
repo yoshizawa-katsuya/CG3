@@ -19,7 +19,11 @@ public:
 
 	void CreateParticle(std::mt19937& randomEngine);
 
-	Particle MakeNewParticle(std::mt19937& randomEngine);
+	Particle MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate);
+
+	std::list<Particle> Emit(const Emitter& emitter, std::mt19937& randomEngine);
+
+	void UpdateEmit(std::mt19937& randomEngine);
 
 	void Draw(ID3D12GraphicsCommandList* commandList);
 
@@ -40,11 +44,17 @@ public:
 
 	bool& GetUseBillboardAddress() { return useBillboard_; }
 
+	std::list<Particle>& GetParticles() { return particles_; }
+
+	Emitter& GetEmitter() { return emitter_; }
+
 	void SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
 
 private:
 
 	void Create();
+
+	const float kDeltaTime_ = 1.0f / 60.0f;
 
 	int32_t kClientWidth_;
 	int32_t kClientHeight_;
@@ -73,9 +83,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResouce_;
 	ParticleForGPU* instancingData_ = nullptr;
 
-	const uint32_t kNumMaxInstance_ = 10;
+	const uint32_t kNumMaxInstance_ = 100;
 
-	Particle particles_[10];
+	std::list<Particle> particles_;
+	Emitter emitter_{};
 
 	bool useBillboard_ = true;
 

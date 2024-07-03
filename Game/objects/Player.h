@@ -7,7 +7,7 @@ public:
 
 	void Initialize(Model* model);
 
-	void Update();
+	void Update(std::mt19937& randomEngine);
 
 	void Draw(ID3D12GraphicsCommandList* commandList);
 

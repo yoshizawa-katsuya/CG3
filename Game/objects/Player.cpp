@@ -9,7 +9,7 @@ void Player::Initialize(Model* model) {
 
 }
 
-void Player::Update() {
+void Player::Update(std::mt19937& randomEngine) {
 
 	
 	/*
@@ -24,8 +24,16 @@ void Player::Update() {
 	}
 	ImGui::End();
 	*/
+
+	model_->UpdateEmit(randomEngine);
+
 	ImGui::Begin("Player");
 	ImGui::Checkbox("useBillboard", &model_->GetUseBillboardAddress());
+	ImGui::DragFloat3("EmitterTranslate", &model_->GetEmitter().transform.translate.x, 0.01f, -100.0f, 100.0f);
+	if (ImGui::Button("Add Particle")) {
+		model_->GetParticles().splice(model_->GetParticles().end(), model_->Emit(model_->GetEmitter(), randomEngine));
+	}
+	
 	ImGui::End();
 }
 
