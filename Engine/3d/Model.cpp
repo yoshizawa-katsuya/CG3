@@ -87,7 +87,7 @@ Particle Model::MakeNewParticle(std::mt19937& randomEngine) {
 	Particle particle;
 
 	particle.transform.scale = { 1.0f, 1.0f, 1.0f };
-	particle.transform.rotate = { 0.0f, 3.15f, 0.0f };
+	particle.transform.rotate = { 0.0f, 0.0f, 0.0f };
 	//particle.transform.translate = { index * 0.1f, index * 0.1f, index * 0.1f };
 	particle.transform.translate = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
 	//particle.velocity = { 0.0f, 1.0f, 0.0f };
@@ -175,7 +175,16 @@ void Model::DrawParticle(ID3D12GraphicsCommandList* commandList) {
 	Matrix4x4 cameraMatrix = MakeAffineMatrix(cameratransform_->scale, cameratransform_->rotate, cameratransform_->translate);
 	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth_) / float(kClientHeight_), 0.1f, 100.0f);
-
+	Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
+	Matrix4x4 billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+	billboardMatrix.m[3][0] = 0.0f;	//平行移動成分はいらない
+	billboardMatrix.m[3][1] = 0.0f;
+	billboardMatrix.m[3][2] = 0.0f;
+	if (!useBillboard_) {
+		billboardMatrix = MakeIdentity4x4();
+	}
+	
+	
 	const float kDeltaTime = 1.0f / 60.0f;
 	uint32_t numInstance = 0;
 
@@ -186,7 +195,12 @@ void Model::DrawParticle(ID3D12GraphicsCommandList* commandList) {
 
 		particles_[index].transform.translate += particles_[index].velocity * kDeltaTime;
 		particles_[index].currentTime += kDeltaTime;	//経過時間を足す
-		Matrix4x4 worldMatrix = MakeAffineMatrix(particles_[index].transform.scale, particles_[index].transform.rotate, particles_[index].transform.translate);
+
+		Matrix4x4 scaleMatrix = MakeScaleMatrix(particles_[index].transform.scale);
+		Matrix4x4 translateMatrix = MakeTranslateMatrix(particles_[index].transform.translate);
+		//Matrix4x4 worldMatrix = MakeAffineMatrix(particles_[index].transform.scale, particles_[index].transform.rotate, particles_[index].transform.translate);
+		Matrix4x4 worldMatrix = scaleMatrix * billboardMatrix * translateMatrix;
+
 		Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 		instancingData_[numInstance].WVP = worldViewProjectionMatrix;
 		instancingData_[numInstance].World = worldMatrix;

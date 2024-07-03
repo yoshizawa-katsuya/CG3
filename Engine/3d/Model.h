@@ -5,6 +5,7 @@
 #include <d3d12.h>
 #include <wrl.h>
 #include <random>
+#include <numbers>
 
 class Model
 {
@@ -36,6 +37,8 @@ public:
 	Material& GetMaterialDataAddress() { return *materialData_; }
 
 	Transforms& GetTransformAddress() { return transform_; }
+
+	bool& GetUseBillboardAddress() { return useBillboard_; }
 
 	void SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
 
@@ -73,6 +76,8 @@ private:
 	const uint32_t kNumMaxInstance_ = 10;
 
 	Particle particles_[10];
+
+	bool useBillboard_ = true;
 
 	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU_;
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU_;

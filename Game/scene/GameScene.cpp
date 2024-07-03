@@ -31,7 +31,7 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 	directionalLightData_->intensity = 1.0f;
 
 
-	cameratransform = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -10.0f} };
+	cameratransform = { {1.0f, 1.0f, 1.0f}, {std::numbers::pi_v<float> / 3.0f, std::numbers::pi_v<float>, 0.0f}, {0.0f, 23.0f, 10.0f} };
 
 	textureHandle1 = textureManager_->Load("Game/resources/uvChecker.png");
 

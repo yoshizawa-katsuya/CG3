@@ -11,6 +11,8 @@ void Player::Initialize(Model* model) {
 
 void Player::Update() {
 
+	
+	/*
 	ImGui::Begin("Player");
 	if (ImGui::TreeNode("obj")) {
 		ImGui::ColorEdit4("color", &model_->GetMaterialDataAddress().color.x);
@@ -21,7 +23,10 @@ void Player::Update() {
 		ImGui::TreePop();
 	}
 	ImGui::End();
-
+	*/
+	ImGui::Begin("Player");
+	ImGui::Checkbox("useBillboard", &model_->GetUseBillboardAddress());
+	ImGui::End();
 }
 
 void Player::Draw(ID3D12GraphicsCommandList* commandList) {
