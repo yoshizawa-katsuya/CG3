@@ -24,7 +24,7 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 	directionalLightResource_->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData_));
 	//デフォルト値
 	directionalLightData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	directionalLightData_->direction = { 0.0f, 0.0f, 1.0f };
+	directionalLightData_->direction = { 0.0f, -1.0f, 0.0f };
 	directionalLightData_->intensity = 1.0f;
 
 

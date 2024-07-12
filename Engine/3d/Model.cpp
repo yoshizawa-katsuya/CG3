@@ -54,6 +54,8 @@ void Model::CreateFromOBJ(const std::string& directoryPath, const std::string& f
 	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
 	//単位行列を書き込んでおく
 	transformationMatrixData_->WVP = MakeIdentity4x4();
+	transformationMatrixData_->World = MakeIdentity4x4();
+	transformationMatrixData_->WorldInverseTranspose = Transpose(Inverse(MakeIdentity4x4()));
 
 	textureHandle_ = textureManager_->Load(modelData_.material.textureFilePath);
 
@@ -69,6 +71,7 @@ void Model::Draw(ID3D12GraphicsCommandList* commandList) {
 
 	transformationMatrixData_->WVP = worldViewProjectionMatrix;
 	transformationMatrixData_->World = worldMatrix;
+	transformationMatrixData_->WorldInverseTranspose = Transpose(Inverse(worldMatrix));
 
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);	//VBVを設定
 	//マテリアルのCBufferの場所を設定

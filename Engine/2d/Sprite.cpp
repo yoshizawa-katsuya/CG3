@@ -69,6 +69,8 @@ Sprite::Sprite(ID3D12Device* device, uint32_t textureHandle, Vector2 position, V
 	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
 	//単位行列を書き込んでおく
 	transformationMatrixData_->WVP = MakeIdentity4x4();
+	transformationMatrixData_->World = MakeIdentity4x4();
+	transformationMatrixData_->WorldInverseTranspose = Transpose(Inverse(MakeIdentity4x4()));
 
 }
 
@@ -81,6 +83,7 @@ void Sprite::Draw(ID3D12GraphicsCommandList* commandList, TextureManager* textur
 	Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
 	transformationMatrixData_->WVP = worldViewProjectionMatrixSprite;
 	transformationMatrixData_->World = worldMatrixSprite;
+	transformationMatrixData_->WorldInverseTranspose = Transpose(Inverse(worldMatrixSprite));
 
 	Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransform_.scale);
 	uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransform_.rotate.z));
