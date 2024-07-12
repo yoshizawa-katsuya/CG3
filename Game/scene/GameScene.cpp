@@ -28,12 +28,17 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 	directionalLightData_->intensity = 1.0f;
 
 
-	cameratransform = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -10.0f} };
+	cameratransform_ = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -10.0f} };
+
+	cameraResource_ = CreateBufferResource(device_, sizeof(CameraForGPU));
+	cameraResource_->Map(0, nullptr, reinterpret_cast<void**>(&cameraForGPUData_));
+
+	cameraForGPUData_->worldPosition = cameratransform_.translate;
 
 	textureHandle1 = textureManager_->Load("Game/resources/uvChecker.png");
 
-	model_ = std::make_unique<Model>(device_.Get(), &cameratransform, textureManager_, kClientWidth_, kClientHeight_);
-	model_->CreateFromOBJ("./Game/resources", "fence.obj");
+	model_ = std::make_unique<Model>(device_.Get(), &cameratransform_, textureManager_, kClientWidth_, kClientHeight_);
+	model_->CreateFromOBJ("./Game/resources", "Sphere.obj");
 
 	sprite_ = std::make_unique<Sprite>(device_.Get(), textureHandle1, Vector2{320.0f, 180.0f}, Vector2{640.0f, 360.0f}, Vector4{1.0f, 1.0f, 1.0f, 1.0f}, kClientWidth_, kClientHeight_);
 
@@ -51,9 +56,9 @@ void GameScene::Update() {
 	ImGui::Begin("Window");
 	ImGui::DragFloat3("tranlateSprite", &sprite_->GetTransformAddress().translate.x, 0.01f);
 	if (ImGui::TreeNode("camera")) {
-		ImGui::DragFloat3("translate", &cameratransform.translate.x, 0.01f);
-		ImGui::DragFloat3("rotate", &cameratransform.rotate.x, 0.01f);
-		ImGui::DragFloat3("scale", &cameratransform.scale.x, 0.01f);
+		ImGui::DragFloat3("translate", &cameratransform_.translate.x, 0.01f);
+		ImGui::DragFloat3("rotate", &cameratransform_.rotate.x, 0.01f);
+		ImGui::DragFloat3("scale", &cameratransform_.scale.x, 0.01f);
 
 		ImGui::TreePop();
 	}
@@ -86,6 +91,9 @@ void GameScene::Update() {
 	//ImGui::Checkbox("useMonsterBall", &useMonaterBall);
 	ImGui::End();
 
+	cameraForGPUData_->worldPosition = cameratransform_.translate;
+
+
 }
 
 void GameScene::Draw(ID3D12GraphicsCommandList* commandList, PrimitiveDrawer* primitiveDrawer) {
@@ -96,6 +104,8 @@ void GameScene::Draw(ID3D12GraphicsCommandList* commandList, PrimitiveDrawer* pr
 	//dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonaterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 	//DirectionalRight
 	commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource_->GetGPUVirtualAddress());
+
+	commandList->SetGraphicsRootConstantBufferView(4, cameraResource_->GetGPUVirtualAddress());
 
 	//プレイヤーの描画
 	player_->Draw(commandList);

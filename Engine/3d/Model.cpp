@@ -45,6 +45,7 @@ void Model::CreateFromOBJ(const std::string& directoryPath, const std::string& f
 	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialData_->enableLighting = true;
 	materialData_->uvTransform = MakeIdentity4x4();
+	materialData_->shininess = 10.0f;
 
 	//transformationMatrixのリソースを作る
 	transformationMatrixResource_ = CreateBufferResource(device_, sizeof(TransformationMatrix));

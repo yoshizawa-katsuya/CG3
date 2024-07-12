@@ -34,7 +34,9 @@ private:
 	int blendMode = static_cast<int>(BlendMode::kBlendModeNone);
 
 	//カメラの変数
-	Transforms cameratransform;
+	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource_;
+	CameraForGPU* cameraForGPUData_;
+	Transforms cameratransform_;
 
 	uint32_t textureHandle1;
 

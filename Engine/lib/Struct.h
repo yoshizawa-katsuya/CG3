@@ -52,6 +52,7 @@ typedef struct Material {
 	int32_t enableLighting;
 	float padding[3];
 	Matrix4x4 uvTransform;
+	float shininess;
 }Material;
 
 typedef struct TransformationMatrix {
@@ -102,4 +103,8 @@ struct MaterialData
 struct ModelData {
 	std::vector<VertexData> vertices;
 	MaterialData material;
+};
+
+struct CameraForGPU {
+	Vector3 worldPosition;
 };
