@@ -76,6 +76,18 @@ struct PointLight {
 	float padding[2];
 };
 
+struct SpotLight {
+	Vector4 color;	//ライトの色
+	Vector3 position;	//ライトの位置
+	float intensity;	//輝度
+	Vector3 direction;	//ライトの向き
+	float distance;	//ライトの届く最大距離
+	float decay;	//減衰率
+	float cosAngle;
+	float cosFalloffStart;	//falloff開始の角度
+	float padding;
+};
+
 typedef struct Ball
 {
 

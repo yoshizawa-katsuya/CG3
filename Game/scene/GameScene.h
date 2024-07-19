@@ -50,6 +50,12 @@ private:
 	//データを書き込む
 	PointLight* pointLightData_;
 
+	//スポットライト
+	Microsoft::WRL::ComPtr<ID3D12Resource> spotLightResource_;
+	//データを書き込む
+	SpotLight* spotLightData_;
+
+
 	std::unique_ptr<Model> model_;
 	std::unique_ptr<Model> modelTerrain_;
 

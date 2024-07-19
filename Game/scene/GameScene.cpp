@@ -2,7 +2,7 @@
 #include "Vector.h"
 #include "dx12.h"
 #include "imgui/imgui.h"
-
+#include <numbers>
 
 GameScene::~GameScene() {
 
@@ -32,9 +32,21 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 	pointLightResource_->Map(0, nullptr, reinterpret_cast<void**>(&pointLightData_));
 	pointLightData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	pointLightData_->position = { 0.0f, 2.0f, 0.0f };
-	pointLightData_->intensity = 1.0f;
+	pointLightData_->intensity = 0.0f;
 	pointLightData_->radius = 3.0f;
 	pointLightData_->decay = 1.0f;
+
+	//スポットライト
+	spotLightResource_ = CreateBufferResource(device_, sizeof(SpotLight));
+	spotLightResource_->Map(0, nullptr, reinterpret_cast<void**>(&spotLightData_));
+	spotLightData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	spotLightData_->position = { 2.0f, 1.25f, 0.0f };
+	spotLightData_->distance = 7.0f;
+	spotLightData_->direction = Normalize({ -1.0f, -1.0, 0.0f });
+	spotLightData_->intensity = 4.0f;
+	spotLightData_->decay = 2.0f;
+	spotLightData_->cosAngle = std::cos(std::numbers::pi_v<float> / 3.0f);
+	spotLightData_->cosFalloffStart = 1.0f;
 
 	cameratransform_ = { {1.0f, 1.0f, 1.0f}, {0.3f, 0.0f, 0.0f}, {0.0f, 5.0f, -15.0f} };
 
@@ -85,11 +97,11 @@ void GameScene::Update() {
 	if (ImGui::TreeNode("directionalLight")) {
 		ImGui::DragFloat4("color", &directionalLightData_->color.x, 0.01f);
 		ImGui::DragFloat3("direction", &directionalLightData_->direction.x, 0.01f);
-		directionalLightData_->direction = Normalize(directionalLightData_->direction);
 		ImGui::DragFloat("intensity", &directionalLightData_->intensity, 0.01f);
 
 		ImGui::TreePop();
 	}
+	directionalLightData_->direction = Normalize(directionalLightData_->direction);
 
 	if (ImGui::TreeNode("PointLight")) {
 		ImGui::ColorEdit4("color", &pointLightData_->color.x);
@@ -100,6 +112,22 @@ void GameScene::Update() {
 
 		ImGui::TreePop();
 	}
+
+	if (ImGui::TreeNode("SpotLight")) {
+		ImGui::ColorEdit4("color", &spotLightData_->color.x);
+		ImGui::DragFloat3("direction", &spotLightData_->direction.x, 0.01f);
+		ImGui::DragFloat3("position", &spotLightData_->position.x, 0.01f);
+		ImGui::DragFloat("intensity", &spotLightData_->intensity, 0.01f);
+		ImGui::DragFloat("distance", &spotLightData_->distance, 0.01f);
+		ImGui::DragFloat("dacay", &spotLightData_->decay, 0.01f);
+		ImGui::DragFloat("cosAngle", &spotLightData_->cosAngle, 0.01f);
+		ImGui::DragFloat("cosFalloffStart", &spotLightData_->cosFalloffStart, 0.01f);
+
+		ImGui::TreePop();
+	}
+	spotLightData_->direction = Normalize(spotLightData_->direction);
+
+
 
 	ImGui::RadioButton("BlendModeNone", &blendMode, static_cast<int>(BlendMode::kBlendModeNone));
 	ImGui::RadioButton("BlendModeNormal", &blendMode, static_cast<int>(BlendMode::kBlendModeNormal));
@@ -127,6 +155,8 @@ void GameScene::Draw(ID3D12GraphicsCommandList* commandList, PrimitiveDrawer* pr
 	commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource_->GetGPUVirtualAddress());
 
 	commandList->SetGraphicsRootConstantBufferView(5, pointLightResource_->GetGPUVirtualAddress());
+
+	commandList->SetGraphicsRootConstantBufferView(6, spotLightResource_->GetGPUVirtualAddress());
 
 	commandList->SetGraphicsRootConstantBufferView(4, cameraResource_->GetGPUVirtualAddress());
 
