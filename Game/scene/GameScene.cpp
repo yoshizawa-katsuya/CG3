@@ -25,10 +25,18 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 	//デフォルト値
 	directionalLightData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	directionalLightData_->direction = { 0.0f, -1.0f, 0.0f };
-	directionalLightData_->intensity = 1.0f;
+	directionalLightData_->intensity = 0.0f;
 
+	//点光源
+	pointLightResource_ = CreateBufferResource(device_, sizeof(PointLight));
+	pointLightResource_->Map(0, nullptr, reinterpret_cast<void**>(&pointLightData_));
+	pointLightData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	pointLightData_->position = { 0.0f, 2.0f, 0.0f };
+	pointLightData_->intensity = 1.0f;
+	pointLightData_->radius = 3.0f;
+	pointLightData_->decay = 1.0f;
 
-	cameratransform_ = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -10.0f} };
+	cameratransform_ = { {1.0f, 1.0f, 1.0f}, {0.3f, 0.0f, 0.0f}, {0.0f, 5.0f, -15.0f} };
 
 	cameraResource_ = CreateBufferResource(device_, sizeof(CameraForGPU));
 	cameraResource_->Map(0, nullptr, reinterpret_cast<void**>(&cameraForGPUData_));
@@ -39,6 +47,9 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 
 	model_ = std::make_unique<Model>(device_.Get(), &cameratransform_, textureManager_, kClientWidth_, kClientHeight_);
 	model_->CreateFromOBJ("./Game/resources", "Sphere.obj");
+
+	modelTerrain_ = std::make_unique<Model>(device_.Get(), &cameratransform_, textureManager_, kClientWidth_, kClientHeight_);
+	modelTerrain_->CreateFromOBJ("./Game/resources", "terrain.obj");
 
 	sprite_ = std::make_unique<Sprite>(device_.Get(), textureHandle1, Vector2{320.0f, 180.0f}, Vector2{640.0f, 360.0f}, Vector4{1.0f, 1.0f, 1.0f, 1.0f}, kClientWidth_, kClientHeight_);
 
@@ -80,6 +91,16 @@ void GameScene::Update() {
 		ImGui::TreePop();
 	}
 
+	if (ImGui::TreeNode("PointLight")) {
+		ImGui::ColorEdit4("color", &pointLightData_->color.x);
+		ImGui::DragFloat3("position", &pointLightData_->position.x, 0.01f);
+		ImGui::DragFloat("intensity", &pointLightData_->intensity, 0.01f);
+		ImGui::DragFloat("radius", &pointLightData_->radius, 0.01f);
+		ImGui::DragFloat("dacay", &pointLightData_->decay, 0.01f);
+
+		ImGui::TreePop();
+	}
+
 	ImGui::RadioButton("BlendModeNone", &blendMode, static_cast<int>(BlendMode::kBlendModeNone));
 	ImGui::RadioButton("BlendModeNormal", &blendMode, static_cast<int>(BlendMode::kBlendModeNormal));
 	ImGui::RadioButton("BlendModeAdd", &blendMode, static_cast<int>(BlendMode::kBlendModeAdd));
@@ -105,10 +126,14 @@ void GameScene::Draw(ID3D12GraphicsCommandList* commandList, PrimitiveDrawer* pr
 	//DirectionalRight
 	commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource_->GetGPUVirtualAddress());
 
+	commandList->SetGraphicsRootConstantBufferView(5, pointLightResource_->GetGPUVirtualAddress());
+
 	commandList->SetGraphicsRootConstantBufferView(4, cameraResource_->GetGPUVirtualAddress());
 
 	//プレイヤーの描画
 	player_->Draw(commandList);
+
+	modelTerrain_->Draw(commandList);
 
 	//modelの描画
 	//model_->Draw(commandList);

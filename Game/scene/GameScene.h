@@ -45,7 +45,13 @@ private:
 	//データを書き込む
 	DirectionalLight* directionalLightData_;
 
+	//点光源
+	Microsoft::WRL::ComPtr<ID3D12Resource> pointLightResource_;
+	//データを書き込む
+	PointLight* pointLightData_;
+
 	std::unique_ptr<Model> model_;
+	std::unique_ptr<Model> modelTerrain_;
 
 	std::unique_ptr<Sprite> sprite_;
 
