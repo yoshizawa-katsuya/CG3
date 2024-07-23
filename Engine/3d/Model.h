@@ -4,6 +4,9 @@
 #include <Windows.h>
 #include <d3d12.h>
 #include <wrl.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 class Model
 {
@@ -11,12 +14,12 @@ public:
 
 	Model(ID3D12Device* device, Transforms* camera, TextureManager* textureManager, const int32_t kClientWidth, const int32_t kClientHeight);
 
-	void CreateFromOBJ(const std::string& directoryPath, const std::string& filename);
+	void CreateModel(const std::string& directoryPath, const std::string& filename);
 
 	void Draw(ID3D12GraphicsCommandList* commandList);
 
 	//objファイルの読み込み
-	ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename);
+	ModelData LoadModelFile(const std::string& directoryPath, const std::string& filename);
 
 	//mtlファイルの読み込み
 	MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
@@ -31,6 +34,8 @@ public:
 	void SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
 
 private:
+
+	Node ReadNode(aiNode* node);
 
 	int32_t kClientWidth_;
 	int32_t kClientHeight_;

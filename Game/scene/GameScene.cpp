@@ -58,10 +58,10 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 	textureHandle1 = textureManager_->Load("Game/resources/uvChecker.png");
 
 	model_ = std::make_unique<Model>(device_.Get(), &cameratransform_, textureManager_, kClientWidth_, kClientHeight_);
-	model_->CreateFromOBJ("./Game/resources", "Sphere.obj");
+	model_->CreateModel("./Game/resources", "plane.gltf");
 
 	modelTerrain_ = std::make_unique<Model>(device_.Get(), &cameratransform_, textureManager_, kClientWidth_, kClientHeight_);
-	modelTerrain_->CreateFromOBJ("./Game/resources", "terrain.obj");
+	modelTerrain_->CreateModel("./Game/resources", "terrain.obj");
 
 	sprite_ = std::make_unique<Sprite>(device_.Get(), textureHandle1, Vector2{320.0f, 180.0f}, Vector2{640.0f, 360.0f}, Vector4{1.0f, 1.0f, 1.0f, 1.0f}, kClientWidth_, kClientHeight_);
 
@@ -163,7 +163,7 @@ void GameScene::Draw(ID3D12GraphicsCommandList* commandList, PrimitiveDrawer* pr
 	//プレイヤーの描画
 	player_->Draw(commandList);
 
-	modelTerrain_->Draw(commandList);
+	//modelTerrain_->Draw(commandList);
 
 	//modelの描画
 	//model_->Draw(commandList);

@@ -12,7 +12,7 @@ void Player::Initialize(Model* model) {
 void Player::Update() {
 
 	ImGui::Begin("Player");
-	if (ImGui::TreeNode("obj")) {
+	if (ImGui::TreeNode("Model")) {
 		ImGui::ColorEdit4("color", &model_->GetMaterialDataAddress().color.x);
 		ImGui::DragFloat3("translate", &model_->GetTransformAddress().translate.x, 0.01f);
 		ImGui::DragFloat3("rotate", &model_->GetTransformAddress().rotate.x, 0.01f);

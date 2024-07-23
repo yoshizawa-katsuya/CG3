@@ -3,9 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <cassert>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+
 
 Model::Model(ID3D12Device* device, Transforms* camera, TextureManager* textureManager, const int32_t kClientWidth, const int32_t kClientHeight) {
 
@@ -17,10 +15,10 @@ Model::Model(ID3D12Device* device, Transforms* camera, TextureManager* textureMa
 
 }
 
-void Model::CreateFromOBJ(const std::string& directoryPath, const std::string& filename) {
+void Model::CreateModel(const std::string& directoryPath, const std::string& filename) {
 
 	//モデル読み込み
-	modelData_ = LoadObjFile(directoryPath, filename);
+	modelData_ = LoadModelFile(directoryPath, filename);
 
 	//VertexResourceを生成
 	vertexResource_ = CreateBufferResource(device_, sizeof(VertexData) * modelData_.vertices.size());
@@ -72,8 +70,8 @@ void Model::Draw(ID3D12GraphicsCommandList* commandList) {
 	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth_) / float(kClientHeight_), 0.1f, 100.0f);
 	Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-	transformationMatrixData_->WVP = worldViewProjectionMatrix;
-	transformationMatrixData_->World = worldMatrix;
+	transformationMatrixData_->WVP = modelData_.rootNode.localMatrix * worldViewProjectionMatrix;
+	transformationMatrixData_->World = modelData_.rootNode.localMatrix * worldMatrix;
 	transformationMatrixData_->WorldInverseTranspose = Transpose(Inverse(worldMatrix));
 
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);	//VBVを設定
@@ -91,7 +89,7 @@ void Model::Draw(ID3D12GraphicsCommandList* commandList) {
 
 }
 
-ModelData Model::LoadObjFile(const std::string& directoryPath, const std::string& filename) {
+ModelData Model::LoadModelFile(const std::string& directoryPath, const std::string& filename) {
 
 	ModelData modelData;	//構築するModelData
 	Assimp::Importer importer;
@@ -136,6 +134,8 @@ ModelData Model::LoadObjFile(const std::string& directoryPath, const std::string
 			modelData.material.textureFilePath = directoryPath + "/" + textureFilePath.C_Str();
 		}
 	}
+
+	modelData.rootNode = ReadNode(scene->mRootNode);
 
 	/*
 	//1.中で必要となる変数の宣言
@@ -271,4 +271,24 @@ Microsoft::WRL::ComPtr<ID3D12Resource> Model::CreateBufferResource(Microsoft::WR
 
 	//assert(SUCCEEDED(hr));
 
+}
+
+Node Model::ReadNode(aiNode* node)
+{
+	Node result;
+	aiMatrix4x4 aiLocalMatrix = node->mTransformation;	//nodeのlocalMatrixを取得
+	aiLocalMatrix.Transpose();	//列ベクトルを行ベクトル形式に転置
+	for (uint32_t i = 0; i < 4; i++) {
+		for (uint32_t j = 0; j < 4; j++) {
+			result.localMatrix.m[i][j] = aiLocalMatrix[i][j];	//他の要素も同様に
+		}
+	}
+	result.name = node->mName.C_Str();	//Node名を格納
+	result.children.resize(node->mNumChildren);	//子供の数だけ確保
+	for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex) {
+		//再帰的に読んで階層構造を作っていく
+		result.children[childIndex] = ReadNode(node->mChildren[childIndex]);
+	}
+
+	return result;
 }
