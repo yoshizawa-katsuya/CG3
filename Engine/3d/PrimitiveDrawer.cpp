@@ -188,6 +188,10 @@ std::unique_ptr<PrimitiveDrawer::PipelineSet> PrimitiveDrawer::CreateGraphicsPip
 		L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(vertexShaderBlob != nullptr);
 
+	Microsoft::WRL::ComPtr<IDxcBlob> GeometryShaderBlob = CompilerShader(L"Engine/shader/BaseGeometryShader.hlsl",
+		L"gs_6_0", dxcUtils, dxcCompiler, includeHandler);
+	assert(vertexShaderBlob != nullptr);
+
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = CompilerShader(L"Engine/shader/Object3d.PS.hlsl",
 		L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(pixelShaderBlob != nullptr);
@@ -207,6 +211,8 @@ std::unique_ptr<PrimitiveDrawer::PipelineSet> PrimitiveDrawer::CreateGraphicsPip
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;	//InputLayout
 	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),
 	vertexShaderBlob->GetBufferSize() };	//VertexShader
+	graphicsPipelineStateDesc.GS = { GeometryShaderBlob->GetBufferPointer(),
+	GeometryShaderBlob->GetBufferSize() };
 	graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),
 	pixelShaderBlob->GetBufferSize() };		//PixelShader
 	graphicsPipelineStateDesc.BlendState = blendDesc;	//BlendState
