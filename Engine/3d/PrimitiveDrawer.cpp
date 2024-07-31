@@ -16,6 +16,8 @@ void PrimitiveDrawer::Initialize(ID3D12Device* device) {
 
 	pipelineSets_.at(static_cast<uint16_t>(BlendMode::kBlendModeScreen)) = CreateGraphicsPipeline(BlendMode::kBlendModeScreen, device);
 
+	pipelineSets_.at(static_cast<uint16_t>(BlendMode::kBlendModeNoneGeometry)) = CreateGraphicsPipeline(BlendMode::kBlendModeNoneGeometry, device);
+
 }
 
 std::unique_ptr<PrimitiveDrawer::PipelineSet> PrimitiveDrawer::CreateGraphicsPipeline(BlendMode blendMode, ID3D12Device* device) {
@@ -226,8 +228,20 @@ std::unique_ptr<PrimitiveDrawer::PipelineSet> PrimitiveDrawer::CreateGraphicsPip
 	graphicsPipelineStateDesc.NumRenderTargets = 1;
 	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	//利用するトポロジ（形状）のタイプ。三角形
-	graphicsPipelineStateDesc.PrimitiveTopologyType =
-		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	switch (blendMode) {
+	//default:
+		//graphicsPipelineStateDesc.PrimitiveTopologyType =
+		//	D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		//break;
+
+	case BlendMode::kBlendModeNoneGeometry:
+	default:
+		graphicsPipelineStateDesc.PrimitiveTopologyType =
+			D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+		break;
+
+	}
+
 	//どのように画面に色を打ち込むかの設定（気にしなくて良い）
 	graphicsPipelineStateDesc.SampleDesc.Count = 1;
 	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;

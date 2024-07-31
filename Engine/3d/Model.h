@@ -16,7 +16,11 @@ public:
 
 	void CreateModel(const std::string& directoryPath, const std::string& filename);
 
+	void CreatePoint(uint32_t textureHandle);
+
 	void Draw(ID3D12GraphicsCommandList* commandList);
+
+	void DrawPoint(ID3D12GraphicsCommandList* commandList);
 
 	//objファイルの読み込み
 	ModelData LoadModelFile(const std::string& directoryPath, const std::string& filename);

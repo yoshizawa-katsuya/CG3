@@ -176,6 +176,7 @@ void main(
 */
 
 //三角形の入力から、三角形を2つ出力
+/*
 [maxvertexcount(6)]
 void main(
 	triangle VertexShaderOutput input[3],
@@ -209,5 +210,54 @@ void main(
         output.Append(element);
         
     }
+    
+}
+*/
+
+//点の入力から、点を出力
+/*
+[maxvertexcount(1)]
+void main(
+	point VertexShaderOutput input[1],
+	inout PointStream<GSOutput> output
+)
+{
+    
+    GSOutput element;
+    
+    element.position = input[0].position;
+    element.normal = input[0].normal;
+    element.texcord = input[0].texcord;
+    element.worldPosition = input[0].worldPosition;
+    output.Append(element);
+    
+}
+*/
+
+//点の入力から、三角形を出力
+[maxvertexcount(3)]
+void main(
+	point VertexShaderOutput input[1],
+	inout TriangleStream<GSOutput> output
+)
+{
+    
+    GSOutput element;
+    
+    //共通
+    element.normal = input[0].normal;
+    element.texcord = input[0].texcord;
+    //1点目
+    element.position = input[0].position;
+    element.worldPosition = input[0].worldPosition;
+    output.Append(element);
+    //2点目
+    element.position = input[0].position + float4(10.0f, 10.0f, 0.0f, 0.0f);
+    element.worldPosition = input[0].worldPosition + float3(10.0f, 10.0f, 0.0f);
+    output.Append(element);
+    //3点目
+    element.position = input[0].position + float4(10.0f, 0.0f, 0.0f, 0.0f);
+    element.worldPosition = input[0].worldPosition + float3(10.0f, 0.0f, 0.0f);
+    output.Append(element);
     
 }

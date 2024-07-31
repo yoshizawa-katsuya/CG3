@@ -58,7 +58,8 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 	textureHandle1 = textureManager_->Load("Game/resources/uvChecker.png");
 
 	model_ = std::make_unique<Model>(device_.Get(), &cameratransform_, textureManager_, kClientWidth_, kClientHeight_);
-	model_->CreateModel("./Game/resources", "plane.gltf");
+	//model_->CreateModel("./Game/resources", "plane.gltf");
+	model_->CreatePoint(textureHandle1);
 
 	modelTerrain_ = std::make_unique<Model>(device_.Get(), &cameratransform_, textureManager_, kClientWidth_, kClientHeight_);
 	modelTerrain_->CreateModel("./Game/resources", "terrain.obj");
@@ -135,6 +136,7 @@ void GameScene::Update() {
 	ImGui::RadioButton("BlendModeSubtract", &blendMode, static_cast<int>(BlendMode::kBlendModeSubtract));
 	ImGui::RadioButton("BlendModeMultiply", &blendMode, static_cast<int>(BlendMode::kBlendModeMultiply));
 	ImGui::RadioButton("BlendModeScreen", &blendMode, static_cast<int>(BlendMode::kBlendModeScreen));
+	ImGui::RadioButton("BlendModeNoneGeometry", &blendMode, static_cast<int>(BlendMode::kBlendModeNoneGeometry));
 
 	
 	//ImGui::Checkbox("useMonsterBall", &useMonaterBall);

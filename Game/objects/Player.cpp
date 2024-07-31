@@ -26,6 +26,6 @@ void Player::Update() {
 
 void Player::Draw(ID3D12GraphicsCommandList* commandList) {
 
-	model_->Draw(commandList);
+	model_->DrawPoint(commandList);
 
 }

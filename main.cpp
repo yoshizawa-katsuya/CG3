@@ -277,7 +277,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		*/
 		//commandList_->IASetIndexBuffer(&indexBufferView);	//IBVを設定
 		//形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
-		dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		//dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 
 
 		gameScene->Draw(dxCommon->GetCommandList(), primitiveDrawer);

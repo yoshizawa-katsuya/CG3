@@ -17,6 +17,7 @@ enum class BlendMode {
 	kBlendModeSubtract,	//減算
 	kBlendModeMultiply,	//乗算
 	kBlendModeScreen,	//スクリーン
+	kBlendModeNoneGeometry,	//ジオメトリ
 
 	kCountOfBlendMode,	//利用してはいけない
 };

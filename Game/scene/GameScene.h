@@ -31,7 +31,7 @@ private:
 
 	TextureManager* textureManager_;
 
-	int blendMode = static_cast<int>(BlendMode::kBlendModeNone);
+	int blendMode = static_cast<int>(BlendMode::kBlendModeNoneGeometry);
 
 	//カメラの変数
 	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource_;

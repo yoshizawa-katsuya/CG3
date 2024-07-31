@@ -62,6 +62,56 @@ void Model::CreateModel(const std::string& directoryPath, const std::string& fil
 
 }
 
+void Model::CreatePoint(uint32_t textureHandle)
+{
+
+	//モデル読み込み
+	//modelData_ = LoadModelFile(directoryPath, filename);
+
+	//VertexResourceを生成
+	vertexResource_ = CreateBufferResource(device_, sizeof(VertexData));
+
+	//リソースの先頭のアドレスから使う
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+	//使用するリソースのサイズは頂点1つ分のサイズ
+	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData));
+	//1頂点当たりのサイズ
+	vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	//頂点リソースにデータを書き込む
+	VertexData* vertexData = nullptr;
+	//書き込むためのアドレスを取得
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	//頂点データをリソースにコピー
+	vertexData[0].position = { 0.0f, 0.0f, 0.0f, 1.0f};
+	vertexData[0].texcoord = { 0.0f, 1.0f };
+	vertexData[0].normal = { 0.0f, 0.0f, 1.0f };
+
+	//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する
+	materialResource_ = CreateBufferResource(device_, sizeof(Material));
+	//マテリアルにデータを書き込む
+	//書き込むためのアドレスを取得
+	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+	//白を書き込む
+	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialData_->enableLighting = true;
+	materialData_->uvTransform = MakeIdentity4x4();
+	materialData_->shininess = 10.0f;
+
+	//transformationMatrixのリソースを作る
+	transformationMatrixResource_ = CreateBufferResource(device_, sizeof(TransformationMatrix));
+	//データを書き込む
+	//書き込むためのアドレスを取得
+	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
+	//単位行列を書き込んでおく
+	transformationMatrixData_->WVP = MakeIdentity4x4();
+	transformationMatrixData_->World = MakeIdentity4x4();
+	transformationMatrixData_->WorldInverseTranspose = Transpose(Inverse(MakeIdentity4x4()));
+
+	textureHandle_ = textureHandle;
+
+}
+
 void Model::Draw(ID3D12GraphicsCommandList* commandList) {
 
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
@@ -85,6 +135,34 @@ void Model::Draw(ID3D12GraphicsCommandList* commandList) {
 	//描画1(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
 		//commandList_->DrawIndexedInstanced((kSubdivision * kSubdivision * 6), 1, 0, 0, 0);
 	commandList->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
+
+
+}
+
+void Model::DrawPoint(ID3D12GraphicsCommandList* commandList)
+{
+
+	Matrix4x4 worldMatrix = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
+	Matrix4x4 cameraMatrix = MakeAffineMatrix(cameratransform_->scale, cameratransform_->rotate, cameratransform_->translate);
+	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth_) / float(kClientHeight_), 0.1f, 100.0f);
+	Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+
+	transformationMatrixData_->WVP = worldViewProjectionMatrix;
+	transformationMatrixData_->World = worldMatrix;
+	transformationMatrixData_->WorldInverseTranspose = Transpose(Inverse(worldMatrix));
+
+	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);	//VBVを設定
+	//マテリアルのCBufferの場所を設定
+	commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
+	//wvp用のCBufferの場所を設定
+	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource_->GetGPUVirtualAddress());
+	//SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
+	textureManager_->SetGraphicsRootDescriptorTable(commandList, 2, textureHandle_);
+
+	//描画1(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
+		//commandList_->DrawIndexedInstanced((kSubdivision * kSubdivision * 6), 1, 0, 0, 0);
+	commandList->DrawInstanced(1, 1, 0, 0);
 
 
 }
