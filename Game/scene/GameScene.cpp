@@ -25,7 +25,7 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 	//デフォルト値
 	directionalLightData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	directionalLightData_->direction = { 0.0f, -1.0f, 0.0f };
-	directionalLightData_->intensity = 0.0f;
+	directionalLightData_->intensity = 1.0f;
 
 	//点光源
 	pointLightResource_ = CreateBufferResource(device_, sizeof(PointLight));
@@ -43,7 +43,7 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 	spotLightData_->position = { 2.0f, 1.25f, 0.0f };
 	spotLightData_->distance = 7.0f;
 	spotLightData_->direction = Normalize({ -1.0f, -1.0, 0.0f });
-	spotLightData_->intensity = 4.0f;
+	spotLightData_->intensity = 0.0f;
 	spotLightData_->decay = 2.0f;
 	spotLightData_->cosAngle = std::cos(std::numbers::pi_v<float> / 3.0f);
 	spotLightData_->cosFalloffStart = 1.0f;
