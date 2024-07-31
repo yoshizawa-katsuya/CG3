@@ -235,6 +235,7 @@ void main(
 */
 
 //点の入力から、三角形を出力
+/*
 [maxvertexcount(3)]
 void main(
 	point VertexShaderOutput input[1],
@@ -259,5 +260,58 @@ void main(
     element.position = input[0].position + float4(10.0f, 0.0f, 0.0f, 0.0f);
     element.worldPosition = input[0].worldPosition + float3(10.0f, 0.0f, 0.0f);
     output.Append(element);
+    
+}
+*/
+
+//四角形の頂点数
+static const uint vnum = 4;
+
+//センターからのオフセット
+static const float4 offset_array[vnum] =
+{
+    float4(-0.33f, -0.5f, 0.0f, 0.0f), //左下
+    float4(-0.33f, 0.5f, 0.0f, 0.0f), //左上
+    float4(0.33f, -0.5f, 0.0f, 0.0f), //右下
+    float4(0.33f, 0.5f, 0.0f, 0.0f), //右上
+};
+
+//左上が0,0 右下が1,1
+static const float2 uv_array[vnum] =
+{
+    float2(0.0f, 1.0f), //左下
+    float2(0.0f,0.0f), //左上
+    float2(1.0f,1.0f), //右下
+    float2(1.0f, 0.0f), //右上
+};
+
+//点の入力から、四角形を出力
+[maxvertexcount(vnum)]
+void main(
+	point VertexShaderOutput input[1],
+	inout TriangleStream<GSOutput> output
+)
+{
+    
+    GSOutput element;
+    
+    //共通
+    element.normal = input[0].normal;
+    
+    //4点分まわす
+    for (uint i = 0; i < vnum; i++)
+    {
+        
+        //ワールド座標ベースで、ずらす
+        element.position = input[0].position + offset_array[i];
+        //element.position = input[0].position + mul(offset_array[i], input[i].WVP);
+        element.worldPosition = input[0].worldPosition + offset_array[i].xyz;
+        //element.worldPosition = mul(offset_array[i], input[i].World).xyz;
+        element.texcord = uv_array[i];
+    
+        output.Append(element);
+    
+    }
+
     
 }

@@ -48,7 +48,7 @@ void GameScene::Initialize(ID3D12Device* device, TextureManager* textureManager,
 	spotLightData_->cosAngle = std::cos(std::numbers::pi_v<float> / 3.0f);
 	spotLightData_->cosFalloffStart = 1.0f;
 
-	cameratransform_ = { {1.0f, 1.0f, 1.0f}, {0.3f, 0.0f, 0.0f}, {0.0f, 5.0f, -15.0f} };
+	cameratransform_ = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f} };
 
 	cameraResource_ = CreateBufferResource(device_, sizeof(CameraForGPU));
 	cameraResource_->Map(0, nullptr, reinterpret_cast<void**>(&cameraForGPUData_));
