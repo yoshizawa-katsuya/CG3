@@ -270,10 +270,10 @@ static const uint vnum = 4;
 //センターからのオフセット
 static const float4 offset_array[vnum] =
 {
-    float4(-0.33f, -0.5f, 0.0f, 0.0f), //左下
-    float4(-0.33f, 0.5f, 0.0f, 0.0f), //左上
-    float4(0.33f, -0.5f, 0.0f, 0.0f), //右下
-    float4(0.33f, 0.5f, 0.0f, 0.0f), //右上
+    float4(-0.5f, -0.5f, 0.0f, 0.0f), //左下
+    float4(-0.5f, 0.5f, 0.0f, 0.0f), //左上
+    float4(0.5f, -0.5f, 0.0f, 0.0f), //右下
+    float4(0.5f, 0.5f, 0.0f, 0.0f), //右上
 };
 
 //左上が0,0 右下が1,1
@@ -304,7 +304,7 @@ void main(
         
         //ワールド座標ベースで、ずらす
         element.position = input[0].position + offset_array[i];
-        //element.position = input[0].position + mul(offset_array[i], input[i].WVP);
+        element.position = mul(element.position, WVP);
         element.worldPosition = input[0].worldPosition + offset_array[i].xyz;
         //element.worldPosition = mul(offset_array[i], input[i].World).xyz;
         element.texcord = uv_array[i];

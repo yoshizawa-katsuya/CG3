@@ -41,11 +41,11 @@ struct Camera
     float32_t3 worldPosition;
 };
 
-ConstantBuffer<Material> gMaterial : register(b0);
-ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
-ConstantBuffer<Camera> gCamera : register(b2);
-ConstantBuffer<PointLight> gPointLight : register(b3);
-ConstantBuffer<SpotLight> gSpotLight : register(b4);
+ConstantBuffer<Material> gMaterial : register(b1);
+ConstantBuffer<DirectionalLight> gDirectionalLight : register(b2);
+ConstantBuffer<Camera> gCamera : register(b3);
+ConstantBuffer<PointLight> gPointLight : register(b4);
+ConstantBuffer<SpotLight> gSpotLight : register(b5);
 Texture2D<float32_t4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
 
